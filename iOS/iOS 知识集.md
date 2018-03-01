@@ -51,3 +51,13 @@ bounds 表示的是视图在自身坐标轴的坐标
 * frame.origin.x = position.x - anchorPoint.x * bounds.size.width
 
 * frame.origin.y = position.y - anchorPoint.y * bounds.size.height
+
+## AVFoundation
+
+### AVCaptureSession 的朝向问题：
+
+在AVCaptureSession 中，由于摄像头硬件原因，导致使用AVCapturePhotoOutput 捕获图片时会出现图片朝向不正确的问题，通过AVCaptureConnection 修改朝向之后，却没有效果（我认为可能原因是该Output 不支持修改朝向），最终采用通过修改已捕获的图片朝向来完成修改：
+```objc
+    UIImage *image = [UIImage imageWithCGImage:photo.CGImageRepresentation scale:1.0 orientation:UIImageOrientationRight];
+
+```
