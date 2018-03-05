@@ -55,6 +55,12 @@ Block 分为三种类型：全局Block（_NSConcreteGlobalBlock）、栈中Block
 
 参考链接：http://blog.sunnyxx.com/2014/04/30/ios_iterator/
 
+### 可变参数：
+
+使用 va_list、va_start、va_arg、va_end 四个宏来对可变参数的方法以及函数的参数进行提取操作。**但要注意的是在向可变参数方法\函数传入参数的时候，最后一个参数需为nil，来表示可变参数结束。**
+
+原理：在函数/方法的参数入栈中，会按照参数从右到左的顺序将参数依次连续入栈，所以在选取参数的时候根据第一个参数的地址，可以找到后续参数的地址。但是由于计算机的内存对齐机制，直接采用偏移地址的方式取得参数会出现错误，故用以上四个宏来操作。（栈的地址是从高到低延伸，栈底地址最大）
+
 ## UIView
 
 ### bounds 与frame 的关系：
@@ -72,6 +78,19 @@ bounds 表示的是视图在自身坐标轴的坐标
 * frame.origin.x = position.x - anchorPoint.x * bounds.size.width
 
 * frame.origin.y = position.y - anchorPoint.y * bounds.size.height
+
+### UIMenuController 显示：
+
+菜单UIMenuController 的显示需要满足一些条件。在默认情况下，**UITextField** 等控件默认支持菜单显示。其他不支持显示菜单项的控件，可以通过重写来使其支持菜单项的显示。在控件中，重写 canBecomeFirstResponder 返回为YES，使控件可以成为FirstResponder，这样控件就能支持菜单的显示。在需要显示菜单项的时候，首先调用需要显示菜单的控件的 becomeFirstResponder 方法，使其成为第一响应者，然后调用菜单的 setTarget... 方法，指定显示的坐标以及控件，最后调用菜单 setVisible... 方法，将菜单显示出来。
+在菜单项的控件中，还有一个方法 canPerformAction... 也与菜单项相关。在该方法中，可以对指定的操作进行判断并指明显示还是不显示。在实验中发现，如果显示菜单的控件不实现该方法，默认会调用控件所在控制器的该方法来进行筛选。
+
+```objc
+    // 显示菜单项
+    [self.clsView becomeFirstResponder];
+    [[UIMenuController sharedMenuController] setTargetRect:CGRectMake(50, 50, 200, 30) inView:self.clsView];
+    [[UIMenuController sharedMenuController] setMenuVisible:YES animated:YES];
+```
+
 
 ## AutoLayout
 
