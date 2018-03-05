@@ -43,6 +43,17 @@ Block 分为三种类型：全局Block（_NSConcreteGlobalBlock）、栈中Block
     元类 [UIScrollView : 0x112367fb0] --- 父类的元类 [UIView : 0x112367c18]
     根元类 [NSObject : 0x10e87ee58] --- 根元类的父类 [NSObject : 0x10e87eea8]
 
+### 集合遍历方法：
+
+在Objective-C 中，有以下几种集合遍历的方法：
+* 传统C 语言的for 循环遍历
+* for-in 格式语法，即NSFastEnumeration（大数据量时很快，因为有一定并行性）
+* makeObjectsPerformSelector... 方法遍历（需要执行相应方法）
+* 集合运算符（速度很慢，写法简洁）
+* enumerateObjectsUsingBlock / withOptions ...（需要取用index 时使用，或者小数据量时使用）
+* dispatch_apply（支持并行，在无序且每个对象耗时操作时使用）
+
+参考链接：http://blog.sunnyxx.com/2014/04/30/ios_iterator/
 
 ## UIView
 
