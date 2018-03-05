@@ -15,6 +15,35 @@ Block 分为三种类型：全局Block（_NSConcreteGlobalBlock）、栈中Block
 
 * +load 方法是当类或者分类被添加到Objective-C 的runtime 中的时候被调用，子类的该方法会在父类该方法执行完之后执行，分类该方法会在主类该方法执行完之后执行；采用函数指针对该方法进行直接调用，也就是说子类、父类、分类中的该方法被区别对待。
 
+### Object、Class、MetaClass：
+
+在Objective-C 中，一切对象都是类（当然除了int、double 等）在Objective-C 的对象结构体数据中，每一个对象都有一个isa 指针，指向他的类型，在调用对象的方法时，运行时就通过isa 指针，寻找其指向的类，从而获取方法表中的方法进行调用。而对于Class 来说，因为Class 也是一个对象，所以每个Class 也有一个isa 指针，指向成为MetaClass （元类）的类，这样在调用类方法时，运行时会通过Class 中的isa 指针找到MetaClass。而对于每一个MetaClass，他们的isa 指针均指向一个 **Root Meta Class**，Root Meta Class 的isa 指针指向其自己。三者示意图如下：
+
+![](../res/class-diagram.jpg)
+
+演示代码如下：
+```objc
+    Class cls = object_getClass(baseView);  // get isa
+    Class meta_cls = object_getClass(cls);  // get isa
+    Class root_meta_cls = object_getClass(meta_cls);  // get isa
+
+    NSLog(@"类 [%@ : %p] --- 父类 [%@ : %p]", cls, cls,
+          [cls superclass], [cls superclass]);  // class
+    
+    NSLog(@"元类 [%@ : %p] --- 父类的元类 [%@ : %p]", meta_cls, meta_cls,
+          [meta_cls superclass], [meta_cls superclass]);  // meta class
+    
+    NSLog(@"根元类 [%@ : %p] --- 根元类的父类 [%@ : %p]", root_meta_cls, root_meta_cls,
+          [root_meta_cls superclass], [root_meta_cls superclass]);  // root meta class
+```
+
+打印结果如下所示：
+
+    类 [UIScrollView : 0x112367f88] --- 父类 [UIView : 0x112367ab0]
+    元类 [UIScrollView : 0x112367fb0] --- 父类的元类 [UIView : 0x112367c18]
+    根元类 [NSObject : 0x10e87ee58] --- 根元类的父类 [NSObject : 0x10e87eea8]
+
+
 ## UIView
 
 ### bounds 与frame 的关系：
