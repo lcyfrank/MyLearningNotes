@@ -6,8 +6,8 @@ Block 分为三种类型：全局Block（_NSConcreteGlobalBlock）、栈中Block
 
 其中，这三种Block 的区别如下所示：
 * 全局Block ：该Block 要么是空Block，要么是不访问任何外部变量的Block。它既不在栈中，也不在堆中，我理解为它可能在内存的全局区。
-* 栈中Block：该Block 有访问外部变量，并且该Block 只有一次执行，因为栈中的空间是可重复使用的，所以当栈中的Block 执行一次之后就被清除出栈了，所以无法多次使用。
-* 堆中Block：保存在堆中的Block，当引用计数为0时被销毁。该类型的Block 都是由栈中Block 从栈中复制到堆中形成的。
+* 栈中Block ：该Block 有访问外部变量，并且该Block 只有一次执行，因为栈中的空间是可重复使用的，所以当栈中的Block 执行一次之后就被清除出栈了，所以无法多次使用。
+* 堆中Block ：保存在堆中的Block，当引用计数为0时被销毁。该类型的Block 都是由栈中Block 从栈中复制到堆中形成的。
 
 ### +initialize 方法和 +load 方法：
 
@@ -49,7 +49,7 @@ Block 分为三种类型：全局Block（_NSConcreteGlobalBlock）、栈中Block
 * 传统C 语言的for 循环遍历
 * for-in 格式语法，即NSFastEnumeration（大数据量时很快，因为有一定并行性）
 * makeObjectsPerformSelector... 方法遍历（需要执行相应方法）
-* 集合运算符（速度很慢，写法简洁）
+* 集合运算符（速度很慢，写法简洁）
 * enumerateObjectsUsingBlock / withOptions ...（需要取用index 时使用，或者小数据量时使用）
 * dispatch_apply（支持并行，在无序且每个对象耗时操作时使用）
 
@@ -57,9 +57,34 @@ Block 分为三种类型：全局Block（_NSConcreteGlobalBlock）、栈中Block
 
 ### 可变参数：
 
-使用 va_list、va_start、va_arg、va_end 四个宏来对可变参数的方法以及函数的参数进行提取操作。**但要注意的是在向可变参数方法\函数传入参数的时候，最后一个参数需为nil，来表示可变参数结束。**
+使用 va_list、va_start、va_arg、va_end 四个宏来对可变参数的方法以及函数的参数进行提取操作。**但要注意的是在向可变参数方法/函数传入参数的时候，最后一个参数需为nil，来表示可变参数结束。**
 
 原理：在函数/方法的参数入栈中，会按照参数从右到左的顺序将参数依次连续入栈，所以在选取参数的时候根据第一个参数的地址，可以找到后续参数的地址。但是由于计算机的内存对齐机制，直接采用偏移地址的方式取得参数会出现错误，故用以上四个宏来操作。（栈的地址是从高到低延伸，栈底地址最大）
+
+### 集合的拷贝问题：
+
+在 Objective-C 中，对于集合的拷贝操作，需要调用 copy / mutableCopy 方法进行。但是在实践中发现，拷贝操作中，对于不可变集合（NSArray、NSDictionary、NSString）调用 copy 方法时，返回的仍然是原实例本身，只有对不可变集合调用 mutableCopy 或者对可变集合（NSMutableArray、NSMutableString）调用 copy / mutableCopy 方法时，集合才会执行拷贝操作。
+
+（深拷贝与浅拷贝）
+
+在集合的拷贝过程中，对于集合中的元素，默认采用的是浅拷贝，即集合中的元素仍为原来的元素，不会被进行拷贝操作。即使调用[NSArray arrayWithArray:...] 方法，得到的新数组中的元素仍指向原数组。若要实现数组中元素的拷贝操作，则需要调用 initWithArray:copyItems: 方法进行，这样数组在新建过程中，会调用数组中元素的 copy 方法进行拷贝
+
+```objc
+    NSString *str = @"fff";
+    NSMutableString *mutable_str = [@"fff" mutableCopy];
+    
+    NSMutableArray *a1 = [@[str, mutable_str] mutableCopy];
+    NSArray *a2 = [a1 copy];
+    NSArray *a3 = [[NSArray alloc] initWithArray:a1 copyItems:YES];
+    
+    NSLog(@"a1: %p, a2: %p", a1, a2);  // array mutable copy
+    NSLog(@"original: %p, %p", a1[0], a1[1]);
+    NSLog(@"copied: %p, %p", a3[0], a3[1]);  // deep copy of elements
+```
+
+    a1: 0x608000057c10, a2: 0x60800002afa0
+    original: 0x10f8d3398, 0x608000057c40
+    copied: 0x10f8d3398, 0xa000000006666663
 
 ## UIView
 
@@ -81,7 +106,7 @@ bounds 表示的是视图在自身坐标轴的坐标
 
 ### UIMenuController 显示：
 
-菜单UIMenuController 的显示需要满足一些条件。在默认情况下，**UITextField** 等控件默认支持菜单显示。其他不支持显示菜单项的控件，可以通过重写来使其支持菜单项的显示。在控件中，重写 canBecomeFirstResponder 返回为YES，使控件可以成为FirstResponder，这样控件就能支持菜单的显示。在需要显示菜单项的时候，首先调用需要显示菜单的控件的 becomeFirstResponder 方法，使其成为第一响应者，然后调用菜单的 setTarget... 方法，指定显示的坐标以及控件，最后调用菜单 setVisible... 方法，将菜单显示出来。
+菜单UIMenuController 的显示需要满足一些条件。在默认情况下，**UITextField** 等控件默认支持菜单显示。其他不支持显示菜单项的控件，可以通过重写来使其支持菜单项的显示。在控件中，重写 canBecomeFirstResponder 返回为YES，使控件可以成为FirstResponder，这样控件就能支持菜单的显示。在需要显示菜单项的时候，首先调用需要显示菜单的控件的 becomeFirstResponder 方法，使其成为第一响应者，然后调用菜单的 setTarget... 方法，指定显示的坐标以及控件，最后调用菜单 setVisible... 方法，将菜单显示出来。
 在菜单项的控件中，还有一个方法 canPerformAction... 也与菜单项相关。在该方法中，可以对指定的操作进行判断并指明显示还是不显示。在实验中发现，如果显示菜单的控件不实现该方法，默认会调用控件所在控制器的该方法来进行筛选。
 
 ```objc
