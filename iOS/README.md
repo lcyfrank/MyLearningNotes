@@ -9,6 +9,10 @@ Block 分为三种类型：全局Block（_NSConcreteGlobalBlock）、栈中Block
 * 栈中Block ：该Block 有访问外部变量，并且该Block 只有一次执行，因为栈中的空间是可重复使用的，所以当栈中的Block 执行一次之后就被清除出栈了，所以无法多次使用。
 * 堆中Block ：保存在堆中的Block，当引用计数为0时被销毁。该类型的Block 都是由栈中Block 从栈中复制到堆中形成的。
 
+### NSBlockOperation：
+
+NSBlockOperation 可以添加多个操作。如果添加的操作数量大于一，那么这些操作就会在 NSBlockOperation 对象中异步执行，而不考虑队列的同时并发数。（即只是在这个操作中异步，而整个操作在队列中仍遵循规则）
+
 ### +initialize 方法和 +load 方法：
 
 * +initialize 方法在类或子类收到第一条消息之前被调用，如果程序一直没有给某个类**或它的子类**发送消息，那么这个类的 +initialize 方法就永远不会被调用；采用`objc_msgSend`机制进行调用，也就是说如果子类没有实现该方法，会继承调用父类的方法，且当分类中实现了该方法时，会覆盖主类方法的调用
