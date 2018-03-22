@@ -57,6 +57,24 @@ Block 分为三种类型：全局Block（_NSConcreteGlobalBlock）、栈中Block
 
 在 KVO 访问某个属性/成员变量的时候，会首先生成对应的 setter 方法，然后在生成的方法中调用 willChange... 和 didChange... 方法来通知监听者。所以判断 KVO 能不能获取到值的监听，就是看在改变值的时候有没有调用相应的 setter 方法。
 
+### 单例模式：
+
+OC 中的单例模式实现起来比较简单，通常，最简单的做法是声明一个 `sharedInstance` 方法，然后在该方法的实现中进行单例对象的创建：
+
+```objc
++ (void)sharedInstance {
+    static <Class> *instance;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        instance = [[<Class> alloc] init];
+    }
+    return instance;
+}
+```
+但是这样会有一个问题，外界仍能通过调用 `alloc` 方法来创建新的对象。
+
+所以有一种比较合适的做法，是在 `allocWithZone` 方法中进行单例静态变量的创建，然后在 `init` 方法中，使用 `dispatch_once` 对对象进行初始化，然后在 `sharedInstance` 方法中直接返回 `[[<Class> alloc] init]` 即可。
+
 ### NSBlockOperation：
 
 NSBlockOperation 可以添加多个操作。如果添加的操作数量大于一，那么这些操作就会在 NSBlockOperation 对象中异步执行，而不考虑队列的同时并发数。（即只是在这个操作中异步，而整个操作在队列中仍遵循规则）
@@ -137,8 +155,30 @@ NSBlockOperation 可以添加多个操作。如果添加的操作数量大于一
     a1: 0x608000057c10, a2: 0x60800002afa0
     original: 0x10f8d3398, 0x608000057c40
     copied: 0x10f8d3398, 0xa000000006666663
+   
+   
+## 底层
+
+### 静态库与动态库的区别：
+
+静态库是指在链接时，会被完整地复制到可执行文件中的库，被多次使用就会多次冗余拷贝；（一堆目标文件的打包体，并非二进制文件）
+
+动态库是指链接的时候不进行复制，程序运行的时候由系统动态地加载到内存中去，只加载一次，可以多个程序共用，节省内存。（但是由于iOS 系统沙盒机制以及需要对 IPA 进行签名，所以应用之间无法共享非官方动态库，只能在App Extension 与主App 之间共享动态库——Embedded Framework）
+
+iOS 中，可以使用静态库和动态库。其中：
+
+* 静态库以 `.a` 或者 `.framework` 为结尾（实际上就是一个压缩包）
+* 动态库以 `.dylib` 或者 `.framework` 为结尾
+
+具体操作在链接时进行，链接时决定每个目标文件的符号地址，若符号来自静态库，则将其纳入链接产物，并确定符号地址；若符号来自动态库，则打个标记，在启动时再进行加载。
+
+使用 `CocoaPods` 的时候，生成的是动态库，但是并不能在工程中看到 `Embedded Framework` 中有嵌入动态库，是因为 `CocoaPods` 默认执行脚本，将这些动态库复制近 `.app` 中的 `FrameWork` 中。
 
 ## UIView
+
+### UIButton 相关小 tip
+
+UIButton 有很多中类型（实际上会创建UIButton 的子类，工厂模式），其中UIButtonTypeCustom 与 UIButtonTypeSystem 比较类似，但是 UIButtonTypeCustom 默认无点击高亮效果，UIButtonTypeSystem 有点击高亮效果。当 UIButton 实例有 UIEventTouchUpInside 类型的 target 和 action 的时候，添加一个点击手势（UITapGestureRecognizer）会使其添加的 target 无效。（断定为手势冲突）
 
 ### bounds 与frame 的关系：
 
