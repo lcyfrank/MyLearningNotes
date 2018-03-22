@@ -245,6 +245,14 @@ SafeArea 示例：
 
 cornerRadius 只对**背景色**和**图层边框**有用，对layer 的contents 属性无效，当内容背景不是透明的时候，cornerRadius 可能会没有效果，所以需要设置masksToBounds 为YES 来解决，masksToBounds 作用是决定子layer 是否被当前layer 的边界裁剪
 
+### 动画的 fillMode 属性：
+
+fillMode 属性决定了当前对象在非 active 时间段的行为，比如动画开始前和动画开始之后。
+
+* kCAFillModeRemoved 默认值，动画对 `layer` 没有影响
+* kCAFillModeForwards 动画向前延伸（即 `layer` 会一直保持动画最终的状态）
+* kCAFillModeBackwards 在动画开始前，`layer` 会保持着动画一开始的样式
+
 ## AVFoundation
 
 ### AVCaptureSession 的朝向问题：
