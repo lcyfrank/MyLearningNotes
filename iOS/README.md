@@ -53,7 +53,7 @@ Block 分为三种类型：全局Block（_NSConcreteGlobalBlock）、栈中Block
 
 由此可知 KVC 的访问机制为：
 
-首先根据 key 查看是否有相应的 setter 方法，若没有相应的 setter 方法，则判断类方法 accessInstanceVariablesDirectly 的返回值来根据 _\<key\>、_is\<key\>、\<key\>、is\<key\> 的顺序对成员变量进行访问，若都访问不到，则调用 setValue:forUndefinedKey:
+首先根据 key 查看是否有相应的 setter 方法，若没有相应的 setter 方法，则判断类方法 accessInstanceVariablesDirectly 的返回值来根据 _\<key\>、_is\<key\>、\<key\>、is\<key\> 的顺序对成员变量进行访问，若都访问不到，则调用 setValue:forUndefinedKey:
 
 在 KVO 访问某个属性/成员变量的时候，会首先生成对应的 setter 方法，然后在生成的方法中调用 willChange... 和 didChange... 方法来通知监听者。所以判断 KVO 能不能获取到值的监听，就是看在改变值的时候有没有调用相应的 setter 方法。
 
@@ -62,15 +62,18 @@ Block 分为三种类型：全局Block（_NSConcreteGlobalBlock）、栈中Block
 OC 中的单例模式实现起来比较简单，通常，最简单的做法是声明一个 `sharedInstance` 方法，然后在该方法的实现中进行单例对象的创建：
 
 ```objc
+
 + (void)sharedInstance {
     static <Class> *instance;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         instance = [[<Class> alloc] init];
-    }
+    });
     return instance;
 }
+
 ```
+
 但是这样会有一个问题，外界仍能通过调用 `alloc` 方法来创建新的对象。
 
 所以有一种比较合适的做法，是在 `allocWithZone` 方法中进行单例静态变量的创建，然后在 `init` 方法中，使用 `dispatch_once` 对对象进行初始化，然后在 `sharedInstance` 方法中直接返回 `[[<Class> alloc] init]` 即可。
@@ -155,7 +158,10 @@ NSBlockOperation 可以添加多个操作。如果添加的操作数量大于一
     a1: 0x608000057c10, a2: 0x60800002afa0
     original: 0x10f8d3398, 0x608000057c40
     copied: 0x10f8d3398, 0xa000000006666663
-   
+
+### NSTimer 的持有释放问题
+
+在开发中，`NSTimer` 是比较常用的一个控件，但是 `NSTimer` 通常会出现内存泄漏的问题。只是由于 `NSTimer` 添加到 `RunLoop` 中的时候，`RunLoop` 会对 `NSTimer` 有一个强引用，这样 `NSTimer` 就不会被释放，从而会出现内存泄漏的问题。当调用 `NSTimer` 的 `invalidate` 方法的时候，`RunLoop` 就不会继续持有该 `NSTimer` 对象，从而可以释放内存。
    
 ## 底层
 
