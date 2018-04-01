@@ -5,6 +5,7 @@ void selectionSort(int *nums, int length);  // 选择排序
 void insertionSort(int *nums, int length);  // 插入排序
 void shellSort(int *nums, int length, int h, int k);  // 希尔排序
 void mergeSort(int *nums, int length);  // 归并排序
+void quickSort(int *nums, int length);  // 快速排序
 
 void printArray(int *nums, int length) {
     printf("[");
@@ -19,7 +20,7 @@ void printArray(int *nums, int length) {
 
 int main(int argc, char const *argv[]) {
     int nums[10] = {2, 3, 1, 5, 6, 2, 0, 3, 4, 8};
-    mergeSort(nums, 10);
+    quickSort(nums, 10);
     printArray(nums, 10);
     return 0;
 }
@@ -107,4 +108,45 @@ void mergeApart(int *nums, int low, int high) {
 
 void mergeSort(int *nums, int length) {
     mergeApart(nums, 0, length - 1);
+}
+
+/*
+ * 快速排序
+ */
+int partition(int *nums, int low, int high) {
+    int standard = low;
+    int left = standard + 1;
+    int right = high;
+
+    int index;
+
+    while (1) {
+        while (left <= high && nums[left] < nums[standard]) left++;
+        while (nums[right] > nums[standard]) right--;
+        if (left >= right) {
+            int temp = nums[right];
+            nums[right] = nums[standard];
+            nums[standard] = temp;
+            index = right;
+            break;
+        } else {
+            int temp = nums[left];
+            nums[left] = nums[right];
+            nums[right] = temp;
+        }
+    }
+    return index;
+}
+
+void quickApart(int *nums, int low, int high) {
+    if (high - low <= 0) {
+        return;
+    }
+    int index = partition(nums, low, high);
+    quickApart(nums, low, index - 1);
+    quickApart(nums, index + 1, high);
+}
+
+void quickSort(int *nums, int length) {
+    quickApart(nums, 0, length - 1);
 }

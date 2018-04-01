@@ -2,15 +2,19 @@
 
 I create this repository to save my small learning notes.
 
-Now, there are just some knowledge of **developing iOS app**, some features of **C/C++ language** and **the basic of computer science** in this repository.
+The knowledge in this repository contains `Development in iOS` 、 `The basic C/C++` 、 `The basic of computer` 、 `Algorithms` and `Computer Network`.
 
-### table of Contents
+### Table of Contents
 
-* [iOS](./iOS/) 
+* [iOS](./iOS/)
 
 * [C/C++](./C\C++)
 
 * [计算机基础](./计算机基础/)
+
+* [算法](./算法/)
+
+* [计算机网络](./计算机网络/)
 
 ---
 
